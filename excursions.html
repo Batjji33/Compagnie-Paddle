@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nos Sorties en Mer | Compagnie Paddle</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="navbar-logo">
+            <a href="index.html">
+                <img src="Logo_Final.png" alt="Logo Compagnie Paddle">
+            </a>
+        </div>
+        <div class="navbar-links">
+            <a href="index.html">Accueil</a>
+            <a href="location.html">Location & Équipements</a>
+            <a href="excursions.html">Nos sorties en mer</a>
+            <a href="avis.html">Donnez votre avis</a>
+            <a href="contact.html">Nous trouver</a>
+            <a href="excursions.html" class="btn-reserver">Réserver</a>
+        </div>
+    </nav>
+
+    <header class="page-header">
+        <h1>Nos Sorties en Mer</h1>
+        <p style="font-family: var(--font-subtitle); max-width: 600px; margin: 0 auto; font-size: 1.1rem;">Vivez une expérience inoubliable sur les côtes bretonnes.</p>
+    </header>
+
+    <section class="container" style="margin-top: -40px;">
+        <div class="excursions-grid">
+            
+            <div class="excursion-card">
+                <img src="Baignade.jpg" alt="Excursion baignade" class="excursion-img">
+                <div class="excursion-content">
+                    <span class="excursion-badge">Accessible dès 12 ans</span>
+                    <h3>Excursion baignade – Le long de la côte</h3>
+                    <div class="price">24€</div>
+                    <p>Partez pour une balade maritime le long des côtes bretonnes et profitez d’un moment unique entre découverte et détente. Cette excursion permet d’admirer les paysages naturels tout en faisant une pause baignade en pleine mer, dans des eaux calmes et agréables.</p>
+                    <div class="excursion-info">
+                        <ul>
+                            <li><i class="ph ph-map-pin"></i> Départ : Plage du Rohaliguen</li>
+                            <li><i class="ph ph-clock"></i> Durée : environ 30 minutes</li>
+                            <li><i class="ph ph-swimming-pool"></i> Pause baignade incluse</li>
+                        </ul>
+                    </div>
+                    <button class="btn btn-primary btn-choose-excursion" data-excursion="baignade">Choisir mon excursion</button>
+                </div>
+            </div>
+
+            <div class="excursion-card">
+                <img src="Parc_Bateaux.jpg" alt="Excursion parc à bateaux" class="excursion-img">
+                <div class="excursion-content">
+                    <span class="excursion-badge">Accessible à tous</span>
+                    <h3>Excursion autour du parc à bateaux</h3>
+                    <div class="price">32€</div>
+                    <p>Découvrez l’univers maritime breton à travers une navigation paisible autour du parc à bateaux. Cette sortie offre une immersion dans la vie nautique locale avec des commentaires et anecdotes sur les embarcations, le littoral et l’histoire maritime de la région.</p>
+                    <div class="excursion-info">
+                        <ul>
+                            <li><i class="ph ph-map-pin"></i> Départ : Plage du Rohaliguen</li>
+                            <li><i class="ph ph-clock"></i> Durée : environ 30 minutes</li>
+                            <li><i class="ph ph-microphone-stage"></i> Sortie commentée</li>
+                        </ul>
+                    </div>
+                    <button class="btn btn-primary btn-choose-excursion" data-excursion="parc_bateaux">Choisir mon excursion</button>
+                </div>
+            </div>
+
+            <div class="excursion-card">
+                <img src="Ile_Mouettes.jpg" alt="Île des Mouettes" class="excursion-img">
+                <div class="excursion-content">
+                    <span class="excursion-badge">Juillet et Août</span>
+                    <h3>Excursion de l’Île des Mouettes</h3>
+                    <div class="price">42€</div>
+                    <p>Laissez-vous porter vers l’Île des Mouettes, un petit coin préservé où la nature règne au rythme des marées. Cette excursion permet de découvrir un paysage unique et sauvage dans une atmosphère paisible, idéale pour les amoureux de la mer et des grands espaces.</p>
+                    <div class="excursion-info">
+                        <ul>
+                            <li><i class="ph ph-map-pin"></i> Départ : Plage du Rohaliguen</li>
+                            <li><i class="ph ph-clock"></i> Durée : environ 40 minutes</li>
+                            <li><i class="ph ph-warning-circle"></i> Accessible uniquement à marée basse</li>
+                        </ul>
+                    </div>
+                    <button class="btn btn-primary btn-choose-excursion" data-excursion="ile_mouettes">Choisir mon excursion</button>
+                </div>
+            </div>
+
+        </div>
+
+        <div style="background-color: var(--off-white); padding: 40px; border-radius: 8px; border-left: 4px solid var(--gold);">
+            <h3 style="margin-bottom: 15px; color: var(--blue-marine);"><i class="ph ph-info"></i> Informations importantes</h3>
+            <p>Les traversées et excursions peuvent être annulées ou reportées selon les conditions météorologiques afin d’assurer la sécurité de tous les passagers. En cas d’annulation liée à la météo, une indemnisation ou un report pourra être proposé par la compagnie paddle.</p>
+            <p style="margin-top: 15px;">Le port de départ ainsi que la durée des excursions peuvent également être modifiés en fonction des marées, des conditions de navigation ou de l’organisation des sorties. Toutes les informations pratiques sont communiquées aux passagers avant le départ afin de garantir une expérience agréable et sécurisée.</p>
+        </div>
+    </section>
+
+    <!-- Modal de réservation -->
+    <div class="modal" id="bookingModal">
+        <div class="modal-content">
+            <i class="ph ph-x close-modal" id="closeBookingModal"></i>
+            <h2 id="bookingModalTitle">Réserver une excursion</h2>
+            
+            <div id="step1">
+                <p style="margin-bottom: 20px;">Sélectionnez une date et un créneau disponible.</p>
+                <div id="availableSlots" style="display: grid; gap: 10px; margin-bottom: 20px;">
+                    <!-- Les créneaux seront injectés ici par JS -->
+                    <div style="text-align: center; color: var(--gray-text);">Chargement des créneaux...</div>
+                </div>
+            </div>
+
+            <div id="step2" style="display: none;">
+                <p style="margin-bottom: 20px;">Vous avez sélectionné le créneau : <strong id="selectedSlotText"></strong>.</p>
+                <form id="bookingForm">
+                    <input type="hidden" id="slotId">
+                    <input type="hidden" id="excursionType">
+                    <div class="form-group">
+                        <label for="prenom">Prénom *</label>
+                        <input type="text" id="prenom" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="nom">Nom *</label>
+                        <input type="text" id="nom" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="telephone">Téléphone *</label>
+                        <input type="tel" id="telephone" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Confirmer la réservation</button>
+                    <button type="button" id="btnBackToSlots" class="btn btn-secondary" style="width: 100%; margin-top: 10px; border: 1px solid #ccc; color: var(--gray-text);">Retour aux créneaux</button>
+                </form>
+            </div>
+            
+            <div id="bookingSuccess" style="display: none; text-align: center; padding: 30px 0;">
+                <i class="ph ph-check-circle" style="font-size: 4rem; color: #28a745; margin-bottom: 20px;"></i>
+                <h3>Réservation confirmée !</h3>
+                <p>Merci pour votre réservation. Nous vous attendons avec impatience !</p>
+                <button type="button" class="btn btn-primary" style="margin-top: 20px;" id="btnCloseSuccess">Fermer</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Compagnie Paddle - Thibault Bataille. Tous droits réservés.</p>
+    </footer>
+
+    <a href="admin-login.html" class="admin-link"><i class="ph ph-lock-key"></i> Admin</a>
+
+    <script src="supabase.js"></script>
+    <script src="main.js"></script>
+    <script src="booking.js"></script>
+</body>
+</html>

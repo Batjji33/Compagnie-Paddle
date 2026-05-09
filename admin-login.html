@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion Admin | Compagnie Paddle</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body style="background-color: var(--blue-ciel); display: flex; align-items: center; justify-content: center; height: 100vh;">
+
+    <div style="background-color: var(--white); padding: 40px; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center;">
+        <img src="Logo_Final.png" alt="Logo" style="height: 60px; margin-bottom: 20px;">
+        <h2 style="margin-bottom: 20px;">Accès Administrateur</h2>
+        <form id="loginForm">
+            <div class="form-group" style="text-align: left;">
+                <label for="username">Nom d'utilisateur</label>
+                <input type="text" id="username" class="form-control" required>
+            </div>
+            <div class="form-group" style="text-align: left;">
+                <label for="password">Mot de passe</label>
+                <input type="password" id="password" class="form-control" required>
+            </div>
+            <div id="loginError" style="color: #dc3545; display: none; margin-bottom: 15px; font-weight: bold;">Identifiants incorrects</div>
+            <button type="submit" class="btn btn-primary" style="width: 100%;">Se connecter</button>
+        </form>
+        <a href="index.html" style="display: block; margin-top: 20px; font-size: 0.9rem; color: var(--blue-ocean);">Retour au site</a>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+            
+            if (user === 'tbatail' && pass === '28Avril2013?@') {
+                sessionStorage.setItem('adminLoggedIn', 'true');
+                window.location.href = 'admin.html';
+            } else {
+                document.getElementById('loginError').style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

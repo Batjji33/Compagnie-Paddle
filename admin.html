@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administration | Compagnie Paddle</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+    <nav class="navbar" style="background-color: var(--blue-marine);">
+        <div class="navbar-logo" style="color: white; font-family: var(--font-title); font-size: 1.5rem; display: flex; align-items: center; gap: 15px;">
+            <i class="ph ph-shield-check"></i> Espace Admin
+        </div>
+        <div class="navbar-links">
+            <a href="index.html" target="_blank">Voir le site</a>
+            <button id="logoutBtn" class="btn btn-secondary">Déconnexion</button>
+        </div>
+    </nav>
+
+    <div class="admin-container">
+        <h1 style="margin-top: 100px; margin-bottom: 30px;">Tableau de bord</h1>
+        
+        <div class="admin-tabs">
+            <button class="admin-tab active" data-target="panel-slots">Gestion des créneaux</button>
+            <button class="admin-tab" data-target="panel-reservations">Réservations</button>
+            <button class="admin-tab" data-target="panel-reviews">Avis clients</button>
+        </div>
+
+        <!-- Panel Créneaux -->
+        <div id="panel-slots" class="admin-panel active">
+            <h2>Ajouter un créneau d'excursion</h2>
+            <div style="background-color: var(--off-white); padding: 20px; border-radius: 8px; margin-bottom: 30px;">
+                <form id="addSlotForm" style="display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label>Excursion</label>
+                        <select id="slotExcursion" class="form-control" required>
+                            <option value="baignade">Baignade – Le long de la côte</option>
+                            <option value="parc_bateaux">Autour du parc à bateaux</option>
+                            <option value="ile_mouettes">Île des Mouettes</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label>Date</label>
+                        <input type="date" id="slotDate" class="form-control" required>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label>Heure</label>
+                        <input type="time" id="slotTime" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Ajouter</button>
+                </form>
+            </div>
+
+            <h2>Créneaux existants</h2>
+            <div style="overflow-x: auto;">
+                <table id="slotsTable">
+                    <thead>
+                        <tr>
+                            <th>Excursion</th>
+                            <th>Date</th>
+                            <th>Heure</th>
+                            <th>Statut</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Injecté par JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Panel Réservations -->
+        <div id="panel-reservations" class="admin-panel">
+            <h2>Liste des réservations</h2>
+            <div style="overflow-x: auto;">
+                <table id="reservationsTable">
+                    <thead>
+                        <tr>
+                            <th>Excursion</th>
+                            <th>Date & Heure</th>
+                            <th>Client</th>
+                            <th>Téléphone</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Injecté par JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Panel Avis -->
+        <div id="panel-reviews" class="admin-panel">
+            <h2>Gestion des avis clients</h2>
+            <div style="overflow-x: auto;">
+                <table id="reviewsTableAdmin">
+                    <thead>
+                        <tr>
+                            <th>Client</th>
+                            <th>Note</th>
+                            <th>Commentaire</th>
+                            <th>Date</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Injecté par JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="supabase.js"></script>
+    <script src="admin.js"></script>
+</body>
+</html>

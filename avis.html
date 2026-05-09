@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Donnez votre avis | Compagnie Paddle</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="navbar-logo">
+            <a href="index.html">
+                <img src="Logo_Final.png" alt="Logo Compagnie Paddle">
+            </a>
+        </div>
+        <div class="navbar-links">
+            <a href="index.html">Accueil</a>
+            <a href="location.html">Location & Équipements</a>
+            <a href="excursions.html">Nos sorties en mer</a>
+            <a href="avis.html">Donnez votre avis</a>
+            <a href="contact.html">Nous trouver</a>
+            <a href="excursions.html" class="btn-reserver">Réserver</a>
+        </div>
+    </nav>
+
+    <header class="page-header" style="padding-bottom: 40px;">
+        <h1>Donnez votre avis</h1>
+        <p style="font-family: var(--font-subtitle); max-width: 600px; margin: 0 auto; font-size: 1.1rem;">Votre retour d'expérience est précieux pour nous et pour les futurs passagers.</p>
+    </header>
+
+    <section class="container" style="margin-top: -20px;">
+        <div class="reviews-header">
+            <div class="average-rating" id="averageRatingValue">-</div>
+            <div class="stars" id="averageRatingStars">
+                <i class="ph ph-star"></i><i class="ph ph-star"></i><i class="ph ph-star"></i><i class="ph ph-star"></i><i class="ph ph-star"></i>
+            </div>
+            <p style="margin-top: 10px; color: var(--gray-text);" id="totalReviewsCount">Chargement des avis...</p>
+        </div>
+
+        <div class="review-form-container">
+            <h3 style="text-align: center; margin-bottom: 25px;">Laissez un commentaire</h3>
+            <form id="reviewForm">
+                <div style="display: flex; gap: 20px;">
+                    <div class="form-group" style="flex: 1;">
+                        <label for="reviewPrenom">Prénom *</label>
+                        <input type="text" id="reviewPrenom" class="form-control" required>
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label for="reviewNom">Nom *</label>
+                        <input type="text" id="reviewNom" class="form-control" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="reviewTelephone">Téléphone *</label>
+                    <input type="tel" id="reviewTelephone" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Note *</label>
+                    <div id="starRatingSelect" style="display: flex; gap: 5px; font-size: 2rem; color: #ccc; cursor: pointer;">
+                        <i class="ph-fill ph-star" data-rating="1"></i>
+                        <i class="ph-fill ph-star" data-rating="2"></i>
+                        <i class="ph-fill ph-star" data-rating="3"></i>
+                        <i class="ph-fill ph-star" data-rating="4"></i>
+                        <i class="ph-fill ph-star" data-rating="5"></i>
+                    </div>
+                    <input type="hidden" id="reviewStars" required>
+                </div>
+                <div class="form-group">
+                    <label for="reviewComment">Commentaire *</label>
+                    <textarea id="reviewComment" class="form-control" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Publier mon avis</button>
+            </form>
+            <div id="reviewSuccessMessage" style="display: none; text-align: center; color: #28a745; margin-top: 20px; font-weight: bold;">
+                Merci ! Votre avis a été publié avec succès.
+            </div>
+        </div>
+
+        <h3 style="margin-bottom: 20px;">Ce que disent nos passagers</h3>
+        <div class="reviews-list" id="reviewsList">
+            <!-- Avis injectés en JS -->
+            <div style="text-align: center; padding: 40px;">Chargement des avis...</div>
+        </div>
+
+    </section>
+
+    <footer>
+        <p>&copy; 2026 Compagnie Paddle - Thibault Bataille. Tous droits réservés.</p>
+    </footer>
+
+    <a href="admin-login.html" class="admin-link"><i class="ph ph-lock-key"></i> Admin</a>
+
+    <script src="supabase.js"></script>
+    <script src="main.js"></script>
+    <script src="reviews.js"></script>
+</body>
+</html>
