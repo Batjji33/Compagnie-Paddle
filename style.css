@@ -543,6 +543,18 @@ textarea.form-control {
   cursor: pointer;
 }
 
+/* Fix for invisible slots in modal */
+.modal-content .btn-secondary {
+  color: var(--blue-marine);
+  border: 2px solid var(--blue-marine);
+  margin-bottom: 5px;
+}
+
+.modal-content .btn-secondary:hover {
+  background-color: var(--blue-marine);
+  color: var(--white);
+}
+
 /* Admin */
 .admin-container {
   max-width: 1000px;
@@ -626,21 +638,36 @@ th {
   /* Navbar */
   .navbar {
     flex-direction: column;
-    padding: 15px;
-    gap: 15px;
-    position: relative; /* Un-fix navbar to prevent content overlap */
+    padding: 10px;
+    gap: 10px;
+    position: sticky; /* Better than relative for mobile */
+    top: 0;
+  }
+
+  .navbar-logo img {
+    height: 35px;
   }
 
   .navbar-links {
     flex-wrap: wrap;
     justify-content: center;
-    gap: 10px;
+    gap: 8px;
+    width: 100%;
   }
 
   .navbar-links a {
-    white-space: normal;
+    white-space: nowrap;
     text-align: center;
-    padding: 5px;
+    padding: 4px 8px;
+    font-size: 0.7rem;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 4px;
+  }
+
+  .navbar .btn-reserver {
+    width: 100%;
+    margin-top: 5px;
+    padding: 8px;
   }
 
   .hero {
