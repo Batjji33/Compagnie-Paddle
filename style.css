@@ -26,6 +26,7 @@ body {
   background-color: var(--white);
   line-height: 1.6;
   font-size: 16px;
+  overflow-x: hidden;
 }
 
 h1,
@@ -639,42 +640,50 @@ th {
   .navbar {
     flex-direction: column;
     padding: 10px;
-    gap: 10px;
+    gap: 8px;
     position: sticky;
     top: 0;
     width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  .navbar-logo {
+    width: 100%;
+    text-align: center;
   }
 
   .navbar-logo img {
-    height: 35px;
+    height: 30px;
+    max-width: 100%;
+    object-fit: contain;
+    margin: 0 auto;
   }
 
   .navbar-links {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px;
     width: 100%;
   }
 
   .navbar-links a {
-    white-space: normal; /* Allow wrapping to prevent horizontal cut-off */
+    white-space: nowrap; /* Keep it on one line but smaller font */
     text-align: center;
-    padding: 6px 4px;
-    font-size: 0.65rem;
+    padding: 5px 8px;
+    font-size: 0.6rem;
     border: 1px solid rgba(255,255,255,0.1);
     border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 40px;
+    background-color: rgba(255,255,255,0.05);
   }
 
   .navbar .btn-reserver {
-    grid-column: span 2; /* Button takes full width of the grid */
     width: 100%;
     margin-top: 5px;
-    padding: 10px;
-    font-size: 0.8rem;
+    padding: 8px;
+    font-size: 0.75rem;
+    display: block;
   }
 
   .hero {
