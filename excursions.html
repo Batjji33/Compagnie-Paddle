@@ -32,62 +32,10 @@
     </header>
 
     <section class="container" style="margin-top: -40px;">
-        <div class="excursions-grid">
-            
-            <div class="excursion-card">
-                <img src="Baignade.jpg" alt="Excursion baignade" class="excursion-img">
-                <div class="excursion-content">
-                    <span class="excursion-badge">Accessible dès 12 ans</span>
-                    <h3>Excursion baignade – Le long de la côte</h3>
-                    <div class="price">24€</div>
-                    <p>Partez pour une balade maritime le long des côtes bretonnes et profitez d’un moment unique entre découverte et détente. Cette excursion permet d’admirer les paysages naturels tout en faisant une pause baignade en pleine mer, dans des eaux calmes et agréables.</p>
-                    <div class="excursion-info">
-                        <ul>
-                            <li><i class="ph ph-map-pin"></i> Départ : Plage du Rohaliguen</li>
-                            <li><i class="ph ph-clock"></i> Durée : environ 30 minutes</li>
-                            <li><i class="ph ph-swimming-pool"></i> Pause baignade incluse</li>
-                        </ul>
-                    </div>
-                    <button class="btn btn-primary btn-choose-excursion" data-excursion="baignade">Choisir mon excursion</button>
-                </div>
+        <div id="dynamic-excursions-grid" class="excursions-grid">
+            <div style="text-align: center; grid-column: 1 / -1; padding: 50px;">
+                <p>Chargement des traversées...</p>
             </div>
-
-            <div class="excursion-card">
-                <img src="Parc_Bateaux.jpg" alt="Excursion parc à bateaux" class="excursion-img">
-                <div class="excursion-content">
-                    <span class="excursion-badge">Accessible à tous</span>
-                    <h3>Excursion autour du parc à bateaux</h3>
-                    <div class="price">32€</div>
-                    <p>Découvrez l’univers maritime breton à travers une navigation paisible autour du parc à bateaux. Cette sortie offre une immersion dans la vie nautique locale avec des commentaires et anecdotes sur les embarcations, le littoral et l’histoire maritime de la région.</p>
-                    <div class="excursion-info">
-                        <ul>
-                            <li><i class="ph ph-map-pin"></i> Départ : Plage du Rohaliguen</li>
-                            <li><i class="ph ph-clock"></i> Durée : environ 30 minutes</li>
-                            <li><i class="ph ph-microphone-stage"></i> Sortie commentée</li>
-                        </ul>
-                    </div>
-                    <button class="btn btn-primary btn-choose-excursion" data-excursion="parc_bateaux">Choisir mon excursion</button>
-                </div>
-            </div>
-
-            <div class="excursion-card">
-                <img src="Ile_Mouettes.jpg" alt="Île des Mouettes" class="excursion-img">
-                <div class="excursion-content">
-                    <span class="excursion-badge">Juillet et Août</span>
-                    <h3>Excursion de l’Île des Mouettes</h3>
-                    <div class="price">42€</div>
-                    <p>Laissez-vous porter vers l’Île des Mouettes, un petit coin préservé où la nature règne au rythme des marées. Cette excursion permet de découvrir un paysage unique et sauvage dans une atmosphère paisible, idéale pour les amoureux de la mer et des grands espaces.</p>
-                    <div class="excursion-info">
-                        <ul>
-                            <li><i class="ph ph-map-pin"></i> Départ : Plage du Rohaliguen</li>
-                            <li><i class="ph ph-clock"></i> Durée : environ 40 minutes</li>
-                            <li><i class="ph ph-warning-circle"></i> Accessible uniquement à marée basse</li>
-                        </ul>
-                    </div>
-                    <button class="btn btn-primary btn-choose-excursion" data-excursion="ile_mouettes">Choisir mon excursion</button>
-                </div>
-            </div>
-
         </div>
 
         <div style="background-color: var(--off-white); padding: 40px; border-radius: 8px; border-left: 4px solid var(--gold);">

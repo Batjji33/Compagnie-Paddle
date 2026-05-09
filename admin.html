@@ -23,23 +23,76 @@
     <div class="admin-container">
         <h1 style="margin-top: 100px; margin-bottom: 30px;">Tableau de bord</h1>
         
-        <div class="admin-tabs">
-            <button class="admin-tab active" data-target="panel-slots">Gestion des créneaux</button>
+        <div class="admin-tabs" style="flex-wrap: wrap;">
+            <button class="admin-tab active" data-target="panel-excursions">Traversées</button>
+            <button class="admin-tab" data-target="panel-slots">Créneaux</button>
             <button class="admin-tab" data-target="panel-reservations">Réservations</button>
-            <button class="admin-tab" data-target="panel-reviews">Avis clients</button>
+            <button class="admin-tab" data-target="panel-reviews">Avis</button>
+        </div>
+
+        <!-- Panel Traversées -->
+        <div id="panel-excursions" class="admin-panel active">
+            <h2>Ajouter / Modifier une traversée</h2>
+            <div style="background-color: var(--off-white); padding: 20px; border-radius: 8px; margin-bottom: 30px;">
+                <form id="addExcursionForm" style="display: flex; flex-direction: column; gap: 15px;">
+                    <div class="form-group">
+                        <label>Titre de l'excursion</label>
+                        <input type="text" id="excTitre" class="form-control" required placeholder="Ex: Baignade - Le long de la côte">
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea id="excDesc" class="form-control" required style="height: 80px;" placeholder="Description de l'aventure..."></textarea>
+                    </div>
+                    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                        <div class="form-group" style="flex: 1;">
+                            <label>Tarif</label>
+                            <input type="text" id="excTarif" class="form-control" required placeholder="Ex: 24€">
+                        </div>
+                        <div class="form-group" style="flex: 1;">
+                            <label>Période</label>
+                            <input type="text" id="excPeriode" class="form-control" required placeholder="Ex: Mai à Septembre">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Infos importantes (bas de carte)</label>
+                        <textarea id="excInfos" class="form-control" style="height: 60px;" placeholder="Ex: Gilet de sauvetage fourni. À partir de 8 ans."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Image de la traversée</label>
+                        <input type="file" id="excImage" class="form-control" accept="image/*" required>
+                        <small style="color: var(--blue-marine); margin-top: 5px; display: block;">Formats acceptés : JPG, PNG, WEBP.</small>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="btnSubmitExcursion">Enregistrer la traversée</button>
+                </form>
+            </div>
+
+            <h2>Traversées existantes</h2>
+            <div style="overflow-x: auto;">
+                <table id="excursionsTable">
+                    <thead>
+                        <tr>
+                            <th>Image</th>
+                            <th>Titre</th>
+                            <th>Tarif</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Injecté par JS -->
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <!-- Panel Créneaux -->
-        <div id="panel-slots" class="admin-panel active">
+        <div id="panel-slots" class="admin-panel">
             <h2>Ajouter un créneau d'excursion</h2>
             <div style="background-color: var(--off-white); padding: 20px; border-radius: 8px; margin-bottom: 30px;">
                 <form id="addSlotForm" style="display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap;">
                     <div class="form-group" style="margin-bottom: 0;">
                         <label>Excursion</label>
                         <select id="slotExcursion" class="form-control" required>
-                            <option value="baignade">Baignade – Le long de la côte</option>
-                            <option value="parc_bateaux">Autour du parc à bateaux</option>
-                            <option value="ile_mouettes">Île des Mouettes</option>
+                            <option value="">Chargement des traversées...</option>
                         </select>
                     </div>
                     <div class="form-group" style="margin-bottom: 0;">

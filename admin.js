@@ -26,16 +26,139 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById(target).classList.add('active');
             
             // Reload data based on tab
+            if (target === 'panel-excursions') loadExcursions();
             if (target === 'panel-slots') loadSlots();
             if (target === 'panel-reservations') loadReservations();
             if (target === 'panel-reviews') loadReviewsAdmin();
         });
     });
 
-    const excursionNames = {
-        'baignade': 'Baignade',
-        'parc_bateaux': 'Parc à bateaux',
-        'ile_mouettes': 'Île des Mouettes'
+    // Excursions logic
+    let excursionsMap = {};
+
+    async function loadExcursions() {
+        const tbody = document.querySelector('#excursionsTable tbody');
+        const slotSelect = document.getElementById('slotExcursion');
+        
+        if (tbody) tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Chargement...</td></tr>';
+        
+        try {
+            const { data, error } = await supabaseClient
+                .from('excursions')
+                .select('*')
+                .order('created_at', { ascending: false });
+                
+            if (error) throw error;
+            
+            excursionsMap = {};
+            slotSelect.innerHTML = '';
+            
+            if (data.length === 0) {
+                if (tbody) tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Aucune traversée</td></tr>';
+                slotSelect.innerHTML = '<option value="">Aucune traversée disponible</option>';
+                return;
+            }
+            
+            if (tbody) tbody.innerHTML = '';
+            data.forEach(exc => {
+                excursionsMap[exc.id] = exc.titre; // Store for slots table mapping
+                
+                // Populate select
+                const option = document.createElement('option');
+                option.value = exc.id;
+                option.textContent = exc.titre;
+                slotSelect.appendChild(option);
+                
+                // Populate table
+                if (tbody) {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><img src="${exc.image_url}" alt="Image" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;"></td>
+                        <td>${exc.titre}</td>
+                        <td>${exc.tarif}</td>
+                        <td><button class="btn-danger" onclick="deleteExcursion('${exc.id}', '${exc.image_url}')">Supprimer</button></td>
+                    `;
+                    tbody.appendChild(tr);
+                }
+            });
+        } catch (err) {
+            console.error('Error loading excursions:', err);
+            if (tbody) tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color: #dc3545;">Erreur de chargement</td></tr>';
+        }
+    }
+
+    // Add Excursion
+    const addExcursionForm = document.getElementById('addExcursionForm');
+    if (addExcursionForm) {
+        addExcursionForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btnSubmitExcursion');
+            btn.disabled = true;
+            btn.textContent = 'Téléchargement...';
+            
+            const titre = document.getElementById('excTitre').value;
+            const description = document.getElementById('excDesc').value;
+            const tarif = document.getElementById('excTarif').value;
+            const periode = document.getElementById('excPeriode').value;
+            const infos = document.getElementById('excInfos').value;
+            const fileInput = document.getElementById('excImage');
+            
+            try {
+                let imageUrl = '';
+                if (fileInput.files.length > 0) {
+                    const file = fileInput.files[0];
+                    const fileExt = file.name.split('.').pop();
+                    const fileName = `${Math.random()}.${fileExt}`;
+                    
+                    const { error: uploadError } = await supabaseClient.storage
+                        .from('excursions_images')
+                        .upload(fileName, file);
+                        
+                    if (uploadError) throw uploadError;
+                    
+                    const { data } = supabaseClient.storage
+                        .from('excursions_images')
+                        .getPublicUrl(fileName);
+                        
+                    imageUrl = data.publicUrl;
+                }
+                
+                const { error: insertError } = await supabaseClient.from('excursions').insert([{
+                    titre, description, tarif, periode, infos, image_url: imageUrl
+                }]);
+                
+                if (insertError) throw insertError;
+                
+                addExcursionForm.reset();
+                await loadExcursions();
+                alert('Traversée ajoutée avec succès !');
+                
+            } catch (err) {
+                console.error('Error adding excursion:', err);
+                alert('Erreur lors de l\'ajout de la traversée. Avez-vous créé la table et le bucket Storage ?');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Enregistrer la traversée';
+            }
+        });
+    }
+
+    window.deleteExcursion = async function(id, imageUrl) {
+        if (!confirm('Voulez-vous vraiment supprimer cette traversée ? Cela supprimera peut-être les créneaux associés s\'ils ne sont pas protégés.')) return;
+        try {
+            // Optionnel : supprimer l'image du storage
+            if (imageUrl) {
+                const fileName = imageUrl.split('/').pop();
+                await supabaseClient.storage.from('excursions_images').remove([fileName]);
+            }
+            
+            const { error } = await supabaseClient.from('excursions').delete().eq('id', id);
+            if (error) throw error;
+            await loadExcursions();
+        } catch (err) {
+            console.error('Error deleting excursion:', err);
+            alert('Erreur lors de la suppression');
+        }
     };
 
     // Load Slots
@@ -61,7 +184,7 @@ document.addEventListener('DOMContentLoaded', () => {
             data.forEach(slot => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td>${excursionNames[slot.excursion_type]}</td>
+                    <td>${excursionsMap[slot.excursion_type] || slot.excursion_type}</td>
                     <td>${new Date(slot.date).toLocaleDateString('fr-FR')}</td>
                     <td>${slot.time.substring(0, 5)}</td>
                     <td>${slot.is_booked ? '<span style="color: #dc3545;">Réservé</span>' : '<span style="color: #28a745;">Libre</span>'}</td>
@@ -136,7 +259,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const tr = document.createElement('tr');
                 if (!res.slots) return; // skip if slot is deleted
                 tr.innerHTML = `
-                    <td>${excursionNames[res.slots.excursion_type]}</td>
+                    <td>${excursionsMap[res.slots.excursion_type] || res.slots.excursion_type}</td>
                     <td>${new Date(res.slots.date).toLocaleDateString('fr-FR')} - ${res.slots.time.substring(0, 5)}</td>
                     <td>${res.prenom} ${res.nom}</td>
                     <td>${res.telephone}</td>
@@ -218,6 +341,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Initialize first tab
-    loadSlots();
+    // Initialize
+    async function initAdmin() {
+        await loadExcursions();
+        loadSlots();
+    }
+    
+    initAdmin();
 });

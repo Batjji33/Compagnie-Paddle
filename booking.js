@@ -11,28 +11,75 @@ document.addEventListener('DOMContentLoaded', () => {
     const selectedSlotText = document.getElementById('selectedSlotText');
     const btnCloseSuccess = document.getElementById('btnCloseSuccess');
 
-    const excursionNames = {
-        'baignade': 'Excursion baignade – Le long de la côte',
-        'parc_bateaux': 'Excursion autour du parc à bateaux',
-        'ile_mouettes': 'Excursion de l’Île des Mouettes'
-    };
-
+    let excursionNames = {};
     let currentExcursion = '';
+    const excursionsGrid = document.getElementById('dynamic-excursions-grid');
 
-    btnChooseExcursions.forEach(btn => {
-        btn.addEventListener('click', async (e) => {
-            currentExcursion = e.target.getAttribute('data-excursion');
-            document.getElementById('bookingModalTitle').textContent = `Réserver : ${excursionNames[currentExcursion]}`;
+    if (excursionsGrid) {
+        loadExcursionsFrontend();
+    }
+
+    async function loadExcursionsFrontend() {
+        try {
+            const { data, error } = await supabaseClient
+                .from('excursions')
+                .select('*')
+                .order('created_at', { ascending: true });
+
+            if (error) throw error;
+
+            excursionsGrid.innerHTML = '';
             
-            step1.style.display = 'block';
-            step2.style.display = 'none';
-            bookingSuccess.style.display = 'none';
-            bookingModal.classList.add('active');
-            document.body.style.overflow = 'hidden'; // Prevent scrolling
+            if (data.length === 0) {
+                excursionsGrid.innerHTML = '<div style="text-align: center; grid-column: 1 / -1; padding: 50px;">Aucune traversée disponible pour le moment.</div>';
+                return;
+            }
 
-            await loadAvailableSlots(currentExcursion);
-        });
-    });
+            data.forEach(exc => {
+                excursionNames[exc.id] = exc.titre;
+                
+                const card = document.createElement('div');
+                card.className = 'excursion-card';
+                card.innerHTML = `
+                    <img src="${exc.image_url}" alt="${exc.titre}" class="excursion-img">
+                    <div class="excursion-content">
+                        <span class="excursion-badge">${exc.periode}</span>
+                        <h3>${exc.titre}</h3>
+                        <div class="price">${exc.tarif}</div>
+                        <p>${exc.description}</p>
+                        <div class="excursion-info">
+                            <p style="font-size: 0.85rem; color: var(--blue-marine); margin-bottom: 15px;">
+                                <i class="ph ph-info"></i> ${exc.infos}
+                            </p>
+                        </div>
+                        <button class="btn btn-primary btn-choose-excursion" data-excursion="${exc.id}" data-title="${exc.titre}">Choisir mon excursion</button>
+                    </div>
+                `;
+                excursionsGrid.appendChild(card);
+            });
+
+            // Re-attach event listeners to new buttons
+            document.querySelectorAll('.btn-choose-excursion').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    currentExcursion = e.target.getAttribute('data-excursion');
+                    const excTitle = e.target.getAttribute('data-title');
+                    document.getElementById('bookingModalTitle').textContent = `Réserver : ${excTitle}`;
+                    
+                    step1.style.display = 'block';
+                    step2.style.display = 'none';
+                    bookingSuccess.style.display = 'none';
+                    bookingModal.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+
+                    await loadAvailableSlots(currentExcursion);
+                });
+            });
+
+        } catch (err) {
+            console.error('Error fetching excursions:', err);
+            excursionsGrid.innerHTML = '<div style="color: #dc3545; text-align: center; grid-column: 1 / -1;">Erreur lors du chargement des traversées.</div>';
+        }
+    }
 
     closeBookingModal.addEventListener('click', closeModal);
     btnCloseSuccess.addEventListener('click', closeModal);
