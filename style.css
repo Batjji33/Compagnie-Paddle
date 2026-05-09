@@ -617,74 +617,92 @@ th {
   cursor: pointer;
 }
 
+/* Hamburger icon hidden by default on desktop */
+.hamburger {
+  display: none;
+}
+
 /* =========================================
    Responsive Design (Tablettes & Mobiles)
    ========================================= */
 
-@media (max-width: 992px) {
+@media (max-width: 1024px) {
   .navbar {
-    padding: 10px 20px;
-  }
-  
-  .navbar-links {
-    gap: 15px;
-  }
-  
-  .navbar-links a {
-    font-size: 0.75rem;
-  }
-}
-
-@media (max-width: 768px) {
-  /* Navbar */
-  .navbar {
-    flex-direction: column;
-    padding: 10px;
-    gap: 8px;
-    position: sticky;
-    top: 0;
-    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    height: 70px;
     box-sizing: border-box;
-    overflow: hidden;
+    overflow: visible; /* Allow dropdown to show */
   }
 
   .navbar-logo {
-    width: 100%;
-    text-align: center;
+    width: auto;
   }
 
   .navbar-logo img {
-    height: 30px;
+    height: 40px;
     max-width: 100%;
-    object-fit: contain;
-    margin: 0 auto;
   }
 
+  .hamburger {
+    display: block;
+    margin-left: auto;
+  }
+
+  /* Hide links by default, position them absolute dropdown */
   .navbar-links {
     display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 6px;
+    flex-direction: column;
+    position: absolute;
+    top: 70px;
+    left: 0;
     width: 100%;
+    background-color: var(--blue-marine);
+    padding: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, padding 0.3s ease;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+  }
+
+  .navbar-links.active {
+    max-height: 500px;
+    padding: 20px;
+    gap: 15px;
   }
 
   .navbar-links a {
-    white-space: nowrap; /* Keep it on one line but smaller font */
-    text-align: center;
-    padding: 5px 8px;
-    font-size: 0.6rem;
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 4px;
-    background-color: rgba(255,255,255,0.05);
+    white-space: normal;
+    text-align: left;
+    padding: 12px 15px;
+    font-size: 1rem;
+    border: none;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    border-radius: 0;
+    background-color: transparent;
+    display: block;
+    width: 100%;
+  }
+
+  .navbar-links a:last-child {
+    border-bottom: none;
   }
 
   .navbar .btn-reserver {
     width: 100%;
-    margin-top: 5px;
-    padding: 8px;
-    font-size: 0.75rem;
-    display: block;
+    margin-top: 15px;
+    padding: 12px;
+    font-size: 1rem;
+    text-align: center;
+    background-color: var(--gold);
+    color: var(--blue-marine);
+    border-radius: 6px;
   }
+}
+
+@media (max-width: 768px) {
 
   .hero {
     padding-top: 40px; /* Adjust since navbar is no longer fixed */

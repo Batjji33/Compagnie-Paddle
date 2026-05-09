@@ -23,4 +23,28 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
+
+    // Mobile Navbar Hamburger Logic
+    const navbar = document.querySelector('.navbar');
+    const navLinks = document.querySelector('.navbar-links');
+    
+    // Only inject on standard pages with navLinks, not admin panels
+    if (navbar && navLinks && !document.querySelector('.hamburger')) {
+        const hamburger = document.createElement('div');
+        hamburger.className = 'hamburger';
+        hamburger.innerHTML = '<i class="ph ph-list" style="font-size: 2rem; color: var(--white); cursor: pointer;"></i>';
+        
+        // Ensure hamburger goes before links but after logo
+        navbar.insertBefore(hamburger, navLinks);
+        
+        hamburger.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+            const icon = hamburger.querySelector('i');
+            if (navLinks.classList.contains('active')) {
+                icon.classList.replace('ph-list', 'ph-x');
+            } else {
+                icon.classList.replace('ph-x', 'ph-list');
+            }
+        });
+    }
 });
