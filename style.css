@@ -640,8 +640,9 @@ th {
     flex-direction: column;
     padding: 10px;
     gap: 10px;
-    position: sticky; /* Better than relative for mobile */
+    position: sticky;
     top: 0;
+    width: 100%;
   }
 
   .navbar-logo img {
@@ -649,25 +650,31 @@ th {
   }
 
   .navbar-links {
-    flex-wrap: wrap;
-    justify-content: center;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
     gap: 8px;
     width: 100%;
   }
 
   .navbar-links a {
-    white-space: nowrap;
+    white-space: normal; /* Allow wrapping to prevent horizontal cut-off */
     text-align: center;
-    padding: 4px 8px;
-    font-size: 0.7rem;
+    padding: 6px 4px;
+    font-size: 0.65rem;
     border: 1px solid rgba(255,255,255,0.1);
     border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
   }
 
   .navbar .btn-reserver {
+    grid-column: span 2; /* Button takes full width of the grid */
     width: 100%;
     margin-top: 5px;
-    padding: 8px;
+    padding: 10px;
+    font-size: 0.8rem;
   }
 
   .hero {
