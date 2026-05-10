@@ -24,6 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const { data, error } = await supabaseClient
                 .from('excursions')
                 .select('*')
+                .neq('is_visible', false)
                 .order('created_at', { ascending: true });
 
             if (error) throw error;

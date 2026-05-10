@@ -80,6 +80,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         <td>${exc.titre}</td>
                         <td>${exc.tarif}</td>
                         <td>
+                            <span style="color: ${exc.is_visible !== false ? '#28a745' : '#dc3545'}; font-weight: bold;">
+                                ${exc.is_visible !== false ? 'Visible' : 'Masquée'}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn-secondary" onclick="toggleExcursionVisibility('${exc.id}', ${exc.is_visible !== false})" style="padding: 5px 10px; font-size: 0.8rem; margin-right: 5px;">
+                                ${exc.is_visible !== false ? 'Masquer' : 'Afficher'}
+                            </button>
                             <button class="btn-secondary" onclick="editExcursion('${exc.id}')" style="padding: 5px 10px; font-size: 0.8rem; margin-right: 5px;">Modifier</button>
                             <button class="btn-danger" onclick="deleteExcursion('${exc.id}', '${exc.image_url}')" style="padding: 5px 10px; font-size: 0.8rem;">Supprimer</button>
                         </td>
@@ -92,6 +100,21 @@ document.addEventListener('DOMContentLoaded', () => {
             if (tbody) tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color: #dc3545;">Erreur de chargement</td></tr>';
         }
     }
+
+    window.toggleExcursionVisibility = async function(id, currentStatus) {
+        try {
+            const { error } = await supabaseClient
+                .from('excursions')
+                .update({ is_visible: !currentStatus })
+                .eq('id', id);
+            
+            if (error) throw error;
+            await loadExcursions();
+        } catch (err) {
+            console.error('Error toggling visibility:', err);
+            alert('Erreur lors du changement de visibilité. Avez-vous ajouté la colonne is_visible dans la table excursions ?');
+        }
+    };
 
     // Add / Edit Excursion
     const addExcursionForm = document.getElementById('addExcursionForm');
