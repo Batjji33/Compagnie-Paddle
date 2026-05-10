@@ -35,6 +35,8 @@
             <h2>Ajouter / Modifier une traversée</h2>
             <div style="background-color: var(--off-white); padding: 20px; border-radius: 8px; margin-bottom: 30px;">
                 <form id="addExcursionForm" style="display: flex; flex-direction: column; gap: 15px;">
+                    <input type="hidden" id="excId">
+                    <input type="hidden" id="excOldImageUrl">
                     <div class="form-group">
                         <label>Titre de l'excursion</label>
                         <input type="text" id="excTitre" class="form-control" required placeholder="Ex: Baignade - Le long de la côte">

@@ -35,6 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Excursions logic
     let excursionsMap = {};
+    let allExcursions = []; // Global array for editing
 
     async function loadExcursions() {
         const tbody = document.querySelector('#excursionsTable tbody');
@@ -54,10 +55,12 @@ document.addEventListener('DOMContentLoaded', () => {
             slotSelect.innerHTML = '';
             
             if (data.length === 0) {
-                if (tbody) tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Aucune traversée</td></tr>';
+                if (tbody) tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Aucune traversée</td></tr>';
                 slotSelect.innerHTML = '<option value="">Aucune traversée disponible</option>';
                 return;
             }
+            
+            allExcursions = data; // Stocker pour la modification
             
             if (tbody) tbody.innerHTML = '';
             data.forEach(exc => {
@@ -76,26 +79,31 @@ document.addEventListener('DOMContentLoaded', () => {
                         <td><img src="${exc.image_url}" alt="Image" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;"></td>
                         <td>${exc.titre}</td>
                         <td>${exc.tarif}</td>
-                        <td><button class="btn-danger" onclick="deleteExcursion('${exc.id}', '${exc.image_url}')">Supprimer</button></td>
+                        <td>
+                            <button class="btn-secondary" onclick="editExcursion('${exc.id}')" style="padding: 5px 10px; font-size: 0.8rem; margin-right: 5px;">Modifier</button>
+                            <button class="btn-danger" onclick="deleteExcursion('${exc.id}', '${exc.image_url}')" style="padding: 5px 10px; font-size: 0.8rem;">Supprimer</button>
+                        </td>
                     `;
                     tbody.appendChild(tr);
                 }
             });
         } catch (err) {
             console.error('Error loading excursions:', err);
-            if (tbody) tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color: #dc3545;">Erreur de chargement</td></tr>';
+            if (tbody) tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color: #dc3545;">Erreur de chargement</td></tr>';
         }
     }
 
-    // Add Excursion
+    // Add / Edit Excursion
     const addExcursionForm = document.getElementById('addExcursionForm');
     if (addExcursionForm) {
         addExcursionForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btnSubmitExcursion');
             btn.disabled = true;
-            btn.textContent = 'Téléchargement...';
+            btn.textContent = 'Enregistrement...';
             
+            const id = document.getElementById('excId').value;
+            const oldImageUrl = document.getElementById('excOldImageUrl').value;
             const titre = document.getElementById('excTitre').value;
             const description = document.getElementById('excDesc').value;
             const tarif = document.getElementById('excTarif').value;
@@ -104,7 +112,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const fileInput = document.getElementById('excImage');
             
             try {
-                let imageUrl = '';
+                let imageUrl = oldImageUrl; // Par défaut, on garde l'ancienne image
+                
+                // Si une nouvelle image est sélectionnée
                 if (fileInput.files.length > 0) {
                     const file = fileInput.files[0];
                     const fileExt = file.name.split('.').pop();
@@ -121,26 +131,90 @@ document.addEventListener('DOMContentLoaded', () => {
                         .getPublicUrl(fileName);
                         
                     imageUrl = data.publicUrl;
+                    
+                    // Si on modifie et qu'il y avait une ancienne image, on peut la supprimer (optionnel)
+                    if (id && oldImageUrl) {
+                        const oldFileName = oldImageUrl.split('/').pop();
+                        supabaseClient.storage.from('excursions_images').remove([oldFileName]).catch(e => console.error(e));
+                    }
                 }
                 
-                const { error: insertError } = await supabaseClient.from('excursions').insert([{
-                    titre, description, tarif, periode, infos, image_url: imageUrl
-                }]);
+                if (id) {
+                    // Update
+                    const { error: updateError } = await supabaseClient
+                        .from('excursions')
+                        .update({ titre, description, tarif, periode, infos, image_url: imageUrl })
+                        .eq('id', id);
+                    if (updateError) throw updateError;
+                    alert('Traversée modifiée avec succès !');
+                } else {
+                    // Insert
+                    const { error: insertError } = await supabaseClient
+                        .from('excursions')
+                        .insert([{ titre, description, tarif, periode, infos, image_url: imageUrl }]);
+                    if (insertError) throw insertError;
+                    alert('Traversée ajoutée avec succès !');
+                }
                 
-                if (insertError) throw insertError;
-                
-                addExcursionForm.reset();
+                resetExcursionForm();
                 await loadExcursions();
-                alert('Traversée ajoutée avec succès !');
                 
             } catch (err) {
-                console.error('Error adding excursion:', err);
-                alert('Erreur lors de l\'ajout de la traversée. Avez-vous créé la table et le bucket Storage ?');
+                console.error('Error adding/updating excursion:', err);
+                alert('Erreur lors de l\'enregistrement de la traversée. (Avez-vous configuré RLS sur Supabase ?)');
             } finally {
                 btn.disabled = false;
                 btn.textContent = 'Enregistrer la traversée';
             }
         });
+    }
+
+    window.editExcursion = function(id) {
+        const exc = allExcursions.find(e => e.id === id);
+        if (!exc) return;
+        
+        document.getElementById('excId').value = exc.id;
+        document.getElementById('excOldImageUrl').value = exc.image_url;
+        document.getElementById('excTitre').value = exc.titre;
+        document.getElementById('excDesc').value = exc.description;
+        document.getElementById('excTarif').value = exc.tarif;
+        document.getElementById('excPeriode').value = exc.periode;
+        document.getElementById('excInfos').value = exc.infos || '';
+        
+        // L'image n'est plus obligatoire si on modifie
+        document.getElementById('excImage').removeAttribute('required');
+        
+        const btn = document.getElementById('btnSubmitExcursion');
+        btn.textContent = 'Mettre à jour la traversée';
+        
+        // Ajouter un bouton d'annulation si pas déjà là
+        let cancelBtn = document.getElementById('btnCancelEditExcursion');
+        if (!cancelBtn) {
+            cancelBtn = document.createElement('button');
+            cancelBtn.id = 'btnCancelEditExcursion';
+            cancelBtn.type = 'button';
+            cancelBtn.className = 'btn btn-secondary';
+            cancelBtn.textContent = 'Annuler la modification';
+            cancelBtn.style.marginTop = '10px';
+            cancelBtn.onclick = resetExcursionForm;
+            document.getElementById('addExcursionForm').appendChild(cancelBtn);
+        }
+        
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    function resetExcursionForm() {
+        const form = document.getElementById('addExcursionForm');
+        if (form) {
+            form.reset();
+            document.getElementById('excId').value = '';
+            document.getElementById('excOldImageUrl').value = '';
+            document.getElementById('excImage').setAttribute('required', 'required');
+            document.getElementById('btnSubmitExcursion').textContent = 'Enregistrer la traversée';
+            
+            const cancelBtn = document.getElementById('btnCancelEditExcursion');
+            if (cancelBtn) cancelBtn.remove();
+        }
     }
 
     window.deleteExcursion = async function(id, imageUrl) {
