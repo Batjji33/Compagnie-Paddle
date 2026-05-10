@@ -373,6 +373,10 @@ section {
   flex-grow: 1;
   display: flex;
   flex-direction: column;
+  text-align: left;
+}
+
+.excursion-content p {
   white-space: pre-wrap;
 }
 
@@ -392,7 +396,7 @@ section {
   margin-top: 20px;
   margin-bottom: 25px;
   font-size: 0.9rem;
-  white-space: pre-wrap;
+  text-align: left;
 }
 
 .excursion-info ul {

@@ -47,10 +47,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         <h3>${exc.titre}</h3>
                         <div class="price">${exc.tarif}</div>
                         <p>${exc.description}</p>
-                        <div class="excursion-info">
-                            <p style="font-size: 0.85rem; color: var(--blue-marine); margin-bottom: 15px;">
-                                <i class="ph ph-info"></i> ${exc.infos}
-                            </p>
+                        <div class="excursion-info" style="text-align: left; display: flex; gap: 10px; align-items: flex-start;">
+                            <i class="ph ph-info" style="margin-top: 3px; color: var(--blue-marine); font-size: 1.1rem;"></i>
+                            <p style="font-size: 0.85rem; color: var(--blue-marine); margin-bottom: 0; white-space: pre-wrap; line-height: 1.5;">${exc.infos}</p>
                         </div>
                         <button class="btn btn-primary btn-choose-excursion" data-excursion="${exc.id}" data-title="${exc.titre}">Choisir mon excursion</button>
                     </div>
