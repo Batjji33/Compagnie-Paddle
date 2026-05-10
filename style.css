@@ -373,6 +373,7 @@ section {
   flex-grow: 1;
   display: flex;
   flex-direction: column;
+  white-space: pre-wrap;
 }
 
 .excursion-badge {
@@ -391,6 +392,7 @@ section {
   margin-top: 20px;
   margin-bottom: 25px;
   font-size: 0.9rem;
+  white-space: pre-wrap;
 }
 
 .excursion-info ul {
