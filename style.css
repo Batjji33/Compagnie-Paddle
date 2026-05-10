@@ -544,14 +544,16 @@ textarea.form-control {
   cursor: pointer;
 }
 
-/* Fix for invisible slots in modal */
-.modal-content .btn-secondary {
+/* Fix for invisible slots in modal and admin buttons */
+.modal-content .btn-secondary,
+.admin-container .btn-secondary {
   color: var(--blue-marine);
   border: 2px solid var(--blue-marine);
   margin-bottom: 5px;
 }
 
-.modal-content .btn-secondary:hover {
+.modal-content .btn-secondary:hover,
+.admin-container .btn-secondary:hover {
   background-color: var(--blue-marine);
   color: var(--white);
 }
