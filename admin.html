@@ -29,6 +29,8 @@
             <button class="admin-tab" data-target="panel-slots">Créneaux</button>
             <button class="admin-tab" data-target="panel-reservations">Réservations</button>
             <button class="admin-tab" data-target="panel-reviews">Avis</button>
+            <button class="admin-tab" data-target="panel-banner">Bandeau sorties</button>
+            <button class="admin-tab" data-target="panel-popup">Popup accueil</button>
         </div>
 
         <!-- Panel Traversées -->
@@ -69,11 +71,12 @@
                 </form>
             </div>
 
-            <h2>Traversées existantes</h2>
+            <h2>Traversées existantes <small style="font-size: 0.9rem; font-weight: normal; color: var(--gray-text);">(glissez ▲▼ pour réordonner)</small></h2>
             <div style="overflow-x: auto;">
                 <table id="excursionsTable">
                     <thead>
                         <tr>
+                            <th>Ordre</th>
                             <th>Image</th>
                             <th>Titre</th>
                             <th>Tarif</th>
@@ -138,7 +141,7 @@
                     <thead>
                         <tr>
                             <th>Excursion</th>
-                            <th>Date & Heure</th>
+                            <th>Date &amp; Heure</th>
                             <th>Client</th>
                             <th>Téléphone</th>
                             <th>Action</th>
@@ -169,6 +172,82 @@
                         <!-- Injecté par JS -->
                     </tbody>
                 </table>
+            </div>
+        </div>
+
+        <!-- Panel Bandeau Sorties en Mer -->
+        <div id="panel-banner" class="admin-panel">
+            <h2>Bandeau "Nos Sorties en Mer"</h2>
+            <p style="margin-bottom: 20px; color: var(--gray-text);">Ce bandeau apparaît en haut de la page "Nos Sorties en Mer", juste après le header.</p>
+            <div style="background-color: var(--off-white); padding: 20px; border-radius: 8px; margin-bottom: 30px;">
+                <form id="bannerForm" style="display: flex; flex-direction: column; gap: 15px;">
+                    <div class="form-group">
+                        <label>Titre du bandeau</label>
+                        <input type="text" id="bannerTitle" class="form-control" placeholder="Ex: Plan des traversées - Été 2026">
+                    </div>
+                    <div class="form-group">
+                        <label>Description / Légende</label>
+                        <textarea id="bannerDesc" class="form-control" style="height: 80px;" placeholder="Ex: Retrouvez ici le plan de toutes nos traversées prévues pour cet été..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Couleur de fond du bandeau</label>
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <input type="color" id="bannerColor" class="form-control" value="#0A2342" style="width: 80px; height: 45px; padding: 2px; cursor: pointer;">
+                            <span id="bannerColorHex" style="font-family: monospace; color: var(--blue-marine);">#0A2342</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Image / Plan des traversées</label>
+                        <input type="file" id="bannerImage" class="form-control" accept="image/*">
+                        <small style="color: var(--blue-marine); margin-top: 5px; display: block;">Laissez vide pour conserver l'image actuelle.</small>
+                        <div id="bannerCurrentImg" style="margin-top: 10px; display: none;">
+                            <p style="font-size: 0.85rem; margin-bottom: 5px;">Image actuelle :</p>
+                            <img id="bannerCurrentImgEl" src="" alt="Bandeau actuel" style="max-height: 150px; border-radius: 6px; border: 1px solid #ddd;">
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button type="submit" class="btn btn-primary" id="btnSaveBanner">Enregistrer le bandeau</button>
+                        <button type="button" id="btnHideBanner" class="btn btn-secondary">Masquer le bandeau</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Panel Popup Accueil -->
+        <div id="panel-popup" class="admin-panel">
+            <h2>Popup d'accueil</h2>
+            <p style="margin-bottom: 20px; color: var(--gray-text);">Ce popup s'affiche automatiquement lors de la première visite d'un client sur le site (une seule fois par session).</p>
+            <div style="background-color: var(--off-white); padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                <form id="popupForm" style="display: flex; flex-direction: column; gap: 15px;">
+                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 10px;">
+                        <label style="font-weight: 600; color: var(--blue-marine);">Activer le popup</label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="popupActive">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+
+                    <hr style="border-color: var(--blue-ciel);">
+                    <h3 style="font-size: 1.1rem; color: var(--blue-marine);">🎁 Section "Offre du moment"</h3>
+                    <div class="form-group">
+                        <label>Texte de l'offre</label>
+                        <textarea id="popupOffer" class="form-control" style="height: 100px;" placeholder="Ex: -20% sur toutes les excursions du mois de juin ! Code promo : ETE2026"></textarea>
+                    </div>
+
+                    <hr style="border-color: var(--blue-ciel);">
+                    <h3 style="font-size: 1.1rem; color: var(--blue-marine);">🔴 Section "Prochaines excursions"</h3>
+                    <p style="font-size: 0.9rem; color: var(--gray-text);">Cette section se met à jour automatiquement selon les créneaux disponibles configurés dans l'onglet "Créneaux".</p>
+                    <p style="font-size: 0.9rem; color: var(--gray-text);">Vous pouvez définir le nombre maximum d'excursions à afficher :</p>
+                    <div class="form-group">
+                        <label>Nombre max d'excursions affichées</label>
+                        <input type="number" id="popupMaxSlots" class="form-control" value="5" min="1" max="20" style="max-width: 100px;">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" id="btnSavePopup">Enregistrer le popup</button>
+                </form>
+            </div>
+            <div style="background-color: #e8f4fd; padding: 15px; border-radius: 8px; border-left: 4px solid var(--blue-ocean);">
+                <p style="font-size: 0.9rem;"><i class="ph ph-info"></i> <strong>Aperçu :</strong> Pour tester votre popup, videz le cache de votre navigateur ou ouvrez une fenêtre de navigation privée.</p>
             </div>
         </div>
     </div>

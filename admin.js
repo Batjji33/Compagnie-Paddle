@@ -30,52 +30,59 @@ document.addEventListener('DOMContentLoaded', () => {
             if (target === 'panel-slots') loadSlots();
             if (target === 'panel-reservations') loadReservations();
             if (target === 'panel-reviews') loadReviewsAdmin();
+            if (target === 'panel-banner') loadBanner();
+            if (target === 'panel-popup') loadPopup();
         });
     });
 
-    // Excursions logic
+    // =============================================
+    // EXCURSIONS - with reordering
+    // =============================================
     let excursionsMap = {};
-    let allExcursions = []; // Global array for editing
+    let allExcursions = [];
 
     async function loadExcursions() {
         const tbody = document.querySelector('#excursionsTable tbody');
         const slotSelect = document.getElementById('slotExcursion');
         
-        if (tbody) tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Chargement...</td></tr>';
+        if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Chargement...</td></tr>';
         
         try {
             const { data, error } = await supabaseClient
                 .from('excursions')
                 .select('*')
-                .order('created_at', { ascending: false });
+                .order('sort_order', { ascending: true, nullsFirst: false })
+                .order('created_at', { ascending: true });
                 
             if (error) throw error;
             
             excursionsMap = {};
             slotSelect.innerHTML = '';
+            allExcursions = data;
             
             if (data.length === 0) {
-                if (tbody) tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Aucune traversée</td></tr>';
+                if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Aucune traversée</td></tr>';
                 slotSelect.innerHTML = '<option value="">Aucune traversée disponible</option>';
                 return;
             }
             
-            allExcursions = data; // Stocker pour la modification
-            
             if (tbody) tbody.innerHTML = '';
-            data.forEach(exc => {
-                excursionsMap[exc.id] = exc.titre; // Store for slots table mapping
+            data.forEach((exc, index) => {
+                excursionsMap[exc.id] = exc.titre;
                 
-                // Populate select
                 const option = document.createElement('option');
                 option.value = exc.id;
                 option.textContent = exc.titre;
                 slotSelect.appendChild(option);
                 
-                // Populate table
                 if (tbody) {
                     const tr = document.createElement('tr');
+                    tr.style.opacity = exc.is_visible === false ? '0.5' : '1';
                     tr.innerHTML = `
+                        <td style="white-space: nowrap;">
+                            <button class="btn-order" onclick="moveExcursion('${exc.id}', 'up')" ${index === 0 ? 'disabled' : ''} title="Monter">▲</button>
+                            <button class="btn-order" onclick="moveExcursion('${exc.id}', 'down')" ${index === data.length - 1 ? 'disabled' : ''} title="Descendre">▼</button>
+                        </td>
                         <td><img src="${exc.image_url}" alt="Image" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;"></td>
                         <td>${exc.titre}</td>
                         <td>${exc.tarif}</td>
@@ -84,7 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 ${exc.is_visible !== false ? 'Visible' : 'Masquée'}
                             </span>
                         </td>
-                        <td>
+                        <td style="white-space: nowrap;">
                             <button class="btn-secondary" onclick="toggleExcursionVisibility('${exc.id}', ${exc.is_visible !== false})" style="padding: 5px 10px; font-size: 0.8rem; margin-right: 5px;">
                                 ${exc.is_visible !== false ? 'Masquer' : 'Afficher'}
                             </button>
@@ -97,10 +104,35 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         } catch (err) {
             console.error('Error loading excursions:', err);
-            if (tbody) tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color: #dc3545;">Erreur de chargement</td></tr>';
+            if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color: #dc3545;">Erreur de chargement</td></tr>';
         }
     }
 
+    // Reorder excursion
+    window.moveExcursion = async function(id, direction) {
+        const idx = allExcursions.findIndex(e => e.id === id);
+        if (idx === -1) return;
+        
+        const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
+        if (swapIdx < 0 || swapIdx >= allExcursions.length) return;
+        
+        const current = allExcursions[idx];
+        const swap = allExcursions[swapIdx];
+        
+        const newOrderCurrent = swapIdx + 1;
+        const newOrderSwap = idx + 1;
+        
+        try {
+            await supabaseClient.from('excursions').update({ sort_order: newOrderCurrent }).eq('id', current.id);
+            await supabaseClient.from('excursions').update({ sort_order: newOrderSwap }).eq('id', swap.id);
+            await loadExcursions();
+        } catch (err) {
+            console.error('Error reordering:', err);
+            alert('Erreur lors du réordonnancement. Avez-vous ajouté la colonne sort_order dans Supabase ?');
+        }
+    };
+
+    // Toggle visibility
     window.toggleExcursionVisibility = async function(id, currentStatus) {
         try {
             const { error } = await supabaseClient
@@ -112,7 +144,7 @@ document.addEventListener('DOMContentLoaded', () => {
             await loadExcursions();
         } catch (err) {
             console.error('Error toggling visibility:', err);
-            alert('Erreur lors du changement de visibilité. Avez-vous ajouté la colonne is_visible dans la table excursions ?');
+            alert('Erreur lors du changement de visibilité.');
         }
     };
 
@@ -135,9 +167,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const fileInput = document.getElementById('excImage');
             
             try {
-                let imageUrl = oldImageUrl; // Par défaut, on garde l'ancienne image
+                let imageUrl = oldImageUrl;
                 
-                // Si une nouvelle image est sélectionnée
                 if (fileInput.files.length > 0) {
                     const file = fileInput.files[0];
                     const fileExt = file.name.split('.').pop();
@@ -155,7 +186,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         
                     imageUrl = data.publicUrl;
                     
-                    // Si on modifie et qu'il y avait une ancienne image, on peut la supprimer (optionnel)
                     if (id && oldImageUrl) {
                         const oldFileName = oldImageUrl.split('/').pop();
                         supabaseClient.storage.from('excursions_images').remove([oldFileName]).catch(e => console.error(e));
@@ -163,7 +193,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 
                 if (id) {
-                    // Update
                     const { error: updateError } = await supabaseClient
                         .from('excursions')
                         .update({ titre, description, tarif, periode, infos, image_url: imageUrl })
@@ -171,10 +200,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (updateError) throw updateError;
                     alert('Traversée modifiée avec succès !');
                 } else {
-                    // Insert
+                    // Get current max sort_order
+                    const maxOrder = allExcursions.length + 1;
                     const { error: insertError } = await supabaseClient
                         .from('excursions')
-                        .insert([{ titre, description, tarif, periode, infos, image_url: imageUrl }]);
+                        .insert([{ titre, description, tarif, periode, infos, image_url: imageUrl, sort_order: maxOrder }]);
                     if (insertError) throw insertError;
                     alert('Traversée ajoutée avec succès !');
                 }
@@ -204,13 +234,11 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('excPeriode').value = exc.periode;
         document.getElementById('excInfos').value = exc.infos || '';
         
-        // L'image n'est plus obligatoire si on modifie
         document.getElementById('excImage').removeAttribute('required');
         
         const btn = document.getElementById('btnSubmitExcursion');
         btn.textContent = 'Mettre à jour la traversée';
         
-        // Ajouter un bouton d'annulation si pas déjà là
         let cancelBtn = document.getElementById('btnCancelEditExcursion');
         if (!cancelBtn) {
             cancelBtn = document.createElement('button');
@@ -243,7 +271,6 @@ document.addEventListener('DOMContentLoaded', () => {
     window.deleteExcursion = async function(id, imageUrl) {
         if (!confirm('Voulez-vous vraiment supprimer cette traversée ? Cela supprimera peut-être les créneaux associés s\'ils ne sont pas protégés.')) return;
         try {
-            // Optionnel : supprimer l'image du storage
             if (imageUrl) {
                 const fileName = imageUrl.split('/').pop();
                 await supabaseClient.storage.from('excursions_images').remove([fileName]);
@@ -258,7 +285,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Load Slots
+    // =============================================
+    // SLOTS
+    // =============================================
     async function loadSlots() {
         const tbody = document.querySelector('#slotsTable tbody');
         tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Chargement...</td></tr>';
@@ -295,7 +324,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Add Slot
     document.getElementById('addSlotForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const type = document.getElementById('slotExcursion').value;
@@ -316,7 +344,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Delete Slot
     window.deleteSlot = async function(id) {
         if (!confirm('Voulez-vous vraiment supprimer ce créneau ?')) return;
         try {
@@ -329,19 +356,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Load Reservations
+    // =============================================
+    // RESERVATIONS
+    // =============================================
     async function loadReservations() {
         const tbody = document.querySelector('#reservationsTable tbody');
         tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Chargement...</td></tr>';
         
         try {
-            // Need to join slots and reservations
             const { data, error } = await supabaseClient
                 .from('reservations')
-                .select(`
-                    id, prenom, nom, telephone,
-                    slots ( id, excursion_type, date, time )
-                `)
+                .select(`id, prenom, nom, telephone, slots ( id, excursion_type, date, time )`)
                 .order('created_at', { ascending: false });
                 
             if (error) throw error;
@@ -354,7 +379,7 @@ document.addEventListener('DOMContentLoaded', () => {
             tbody.innerHTML = '';
             data.forEach(res => {
                 const tr = document.createElement('tr');
-                if (!res.slots) return; // skip if slot is deleted
+                if (!res.slots) return;
                 tr.innerHTML = `
                     <td>${excursionsMap[res.slots.excursion_type] || res.slots.excursion_type}</td>
                     <td>${new Date(res.slots.date).toLocaleDateString('fr-FR')} - ${res.slots.time.substring(0, 5)}</td>
@@ -370,15 +395,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Delete Reservation
     window.deleteReservation = async function(resId, slotId) {
         if (!confirm('Voulez-vous vraiment supprimer cette réservation ? Le créneau redeviendra disponible.')) return;
         try {
-            // Delete reservation
             const { error: err1 } = await supabaseClient.from('reservations').delete().eq('id', resId);
             if (err1) throw err1;
             
-            // Mark slot as available
             const { error: err2 } = await supabaseClient.from('slots').update({ is_booked: false }).eq('id', slotId);
             if (err2) throw err2;
             
@@ -389,7 +411,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Load Reviews Admin
+    // =============================================
+    // REVIEWS
+    // =============================================
     async function loadReviewsAdmin() {
         const tbody = document.querySelector('#reviewsTableAdmin tbody');
         tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Chargement...</td></tr>';
@@ -425,7 +449,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Delete Review
     window.deleteReview = async function(id) {
         if (!confirm('Voulez-vous vraiment supprimer cet avis ?')) return;
         try {
@@ -438,7 +461,200 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Initialize
+    // =============================================
+    // BANDEAU SORTIES EN MER
+    // =============================================
+    async function loadBanner() {
+        try {
+            const { data, error } = await supabaseClient
+                .from('excursions_banner')
+                .select('*')
+                .limit(1)
+                .maybeSingle();
+
+            if (error) throw error;
+            if (!data) return;
+
+            document.getElementById('bannerTitle').value = data.titre || '';
+            document.getElementById('bannerDesc').value = data.description || '';
+            document.getElementById('bannerColor').value = data.couleur || '#0A2342';
+            document.getElementById('bannerColorHex').textContent = data.couleur || '#0A2342';
+
+            if (data.image_url) {
+                document.getElementById('bannerCurrentImg').style.display = 'block';
+                document.getElementById('bannerCurrentImgEl').src = data.image_url;
+            }
+
+            const hideBtn = document.getElementById('btnHideBanner');
+            hideBtn.textContent = data.is_visible === false ? 'Afficher le bandeau' : 'Masquer le bandeau';
+
+        } catch (err) {
+            console.error('Error loading banner:', err);
+        }
+    }
+
+    document.getElementById('bannerColor').addEventListener('input', function() {
+        document.getElementById('bannerColorHex').textContent = this.value;
+    });
+
+    document.getElementById('bannerForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('btnSaveBanner');
+        btn.disabled = true;
+        btn.textContent = 'Enregistrement...';
+
+        const titre = document.getElementById('bannerTitle').value;
+        const description = document.getElementById('bannerDesc').value;
+        const couleur = document.getElementById('bannerColor').value;
+        const fileInput = document.getElementById('bannerImage');
+
+        try {
+            // Get existing record
+            const { data: existing } = await supabaseClient
+                .from('excursions_banner')
+                .select('id, image_url')
+                .limit(1)
+                .maybeSingle();
+
+            let imageUrl = existing?.image_url || '';
+
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                const fileExt = file.name.split('.').pop();
+                const fileName = `banner_${Math.random()}.${fileExt}`;
+
+                const { error: uploadError } = await supabaseClient.storage
+                    .from('excursions_images')
+                    .upload(fileName, file);
+
+                if (uploadError) throw uploadError;
+
+                const { data: urlData } = supabaseClient.storage
+                    .from('excursions_images')
+                    .getPublicUrl(fileName);
+
+                imageUrl = urlData.publicUrl;
+
+                // Remove old image
+                if (existing?.image_url) {
+                    const oldFileName = existing.image_url.split('/').pop();
+                    supabaseClient.storage.from('excursions_images').remove([oldFileName]).catch(() => {});
+                }
+            }
+
+            if (existing?.id) {
+                const { error } = await supabaseClient
+                    .from('excursions_banner')
+                    .update({ titre, description, couleur, image_url: imageUrl, is_visible: true })
+                    .eq('id', existing.id);
+                if (error) throw error;
+            } else {
+                const { error } = await supabaseClient
+                    .from('excursions_banner')
+                    .insert([{ titre, description, couleur, image_url: imageUrl, is_visible: true }]);
+                if (error) throw error;
+            }
+
+            await loadBanner();
+            alert('Bandeau enregistré et activé !');
+        } catch (err) {
+            console.error('Error saving banner:', err);
+            alert('Erreur. Avez-vous créé la table excursions_banner dans Supabase ?');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Enregistrer le bandeau';
+        }
+    });
+
+    document.getElementById('btnHideBanner').addEventListener('click', async () => {
+        try {
+            const { data: existing } = await supabaseClient
+                .from('excursions_banner')
+                .select('id, is_visible')
+                .limit(1)
+                .maybeSingle();
+
+            if (!existing) return;
+
+            const newVisibility = existing.is_visible === false ? true : false;
+            const { error } = await supabaseClient
+                .from('excursions_banner')
+                .update({ is_visible: newVisibility })
+                .eq('id', existing.id);
+
+            if (error) throw error;
+            await loadBanner();
+        } catch (err) {
+            console.error('Error toggling banner:', err);
+        }
+    });
+
+    // =============================================
+    // POPUP ACCUEIL
+    // =============================================
+    async function loadPopup() {
+        try {
+            const { data, error } = await supabaseClient
+                .from('popup_settings')
+                .select('*')
+                .limit(1)
+                .maybeSingle();
+
+            if (error) throw error;
+            if (!data) return;
+
+            document.getElementById('popupActive').checked = data.is_active === true;
+            document.getElementById('popupOffer').value = data.offer_text || '';
+            document.getElementById('popupMaxSlots').value = data.max_slots || 5;
+
+        } catch (err) {
+            console.error('Error loading popup:', err);
+        }
+    }
+
+    document.getElementById('popupForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('btnSavePopup');
+        btn.disabled = true;
+        btn.textContent = 'Enregistrement...';
+
+        const is_active = document.getElementById('popupActive').checked;
+        const offer_text = document.getElementById('popupOffer').value;
+        const max_slots = parseInt(document.getElementById('popupMaxSlots').value) || 5;
+
+        try {
+            const { data: existing } = await supabaseClient
+                .from('popup_settings')
+                .select('id')
+                .limit(1)
+                .maybeSingle();
+
+            if (existing?.id) {
+                const { error } = await supabaseClient
+                    .from('popup_settings')
+                    .update({ is_active, offer_text, max_slots })
+                    .eq('id', existing.id);
+                if (error) throw error;
+            } else {
+                const { error } = await supabaseClient
+                    .from('popup_settings')
+                    .insert([{ is_active, offer_text, max_slots }]);
+                if (error) throw error;
+            }
+
+            alert('Popup enregistré !');
+        } catch (err) {
+            console.error('Error saving popup:', err);
+            alert('Erreur. Avez-vous créé la table popup_settings dans Supabase ?');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Enregistrer le popup';
+        }
+    });
+
+    // =============================================
+    // INIT
+    // =============================================
     async function initAdmin() {
         await loadExcursions();
         loadSlots();
