@@ -62,13 +62,12 @@
                 const timeStr = slot.time.substring(0, 5);
 
                 const item = document.createElement('div');
-                item.style.cssText = 'display:flex; justify-content:space-between; align-items:center; background:var(--off-white); border-radius:8px; padding:12px 16px; border-left:3px solid var(--blue-ocean);';
+                item.style.cssText = 'background:var(--off-white); border-radius:8px; padding:12px 16px; border-left:3px solid var(--blue-ocean);';
                 item.innerHTML = `
                     <div>
                         <strong style="color:var(--blue-marine); font-family:var(--font-subtitle);">${excName}</strong><br>
                         <span style="font-size:0.9rem; color:var(--gray-text);">${dateStr} à ${timeStr}</span>
                     </div>
-                    <a href="excursions.html" style="background:var(--blue-ocean); color:white; padding:7px 14px; border-radius:6px; font-size:0.85rem; font-weight:600; text-decoration:none; white-space:nowrap; margin-left:10px;">Réserver</a>
                 `;
                 slotsList.appendChild(item);
             });
