@@ -77,12 +77,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 if (tbody) {
                     const tr = document.createElement('tr');
+                    tr.draggable = true;
+                    tr.dataset.id = exc.id;
+                    tr.style.cursor = 'grab';
                     tr.style.opacity = exc.is_visible === false ? '0.5' : '1';
                     tr.innerHTML = `
-                        <td style="white-space: nowrap;">
-                            <button class="btn-order" onclick="moveExcursion('${exc.id}', 'up')" ${index === 0 ? 'disabled' : ''} title="Monter">▲</button>
-                            <button class="btn-order" onclick="moveExcursion('${exc.id}', 'down')" ${index === data.length - 1 ? 'disabled' : ''} title="Descendre">▼</button>
-                        </td>
+                        <td style="text-align:center; color:var(--gray-text); font-size:1.3rem; cursor:grab;" title="Glisser pour réordonner">☰</td>
                         <td><img src="${exc.image_url}" alt="Image" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;"></td>
                         <td>${exc.titre}</td>
                         <td>${exc.tarif}</td>
@@ -102,35 +102,74 @@ document.addEventListener('DOMContentLoaded', () => {
                     tbody.appendChild(tr);
                 }
             });
+
+            // Setup drag and drop after rendering
+            setupDragAndDrop(tbody);
+
         } catch (err) {
             console.error('Error loading excursions:', err);
             if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color: #dc3545;">Erreur de chargement</td></tr>';
         }
     }
 
-    // Reorder excursion
-    window.moveExcursion = async function(id, direction) {
-        const idx = allExcursions.findIndex(e => e.id === id);
-        if (idx === -1) return;
-        
-        const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
-        if (swapIdx < 0 || swapIdx >= allExcursions.length) return;
-        
-        const current = allExcursions[idx];
-        const swap = allExcursions[swapIdx];
-        
-        const newOrderCurrent = swapIdx + 1;
-        const newOrderSwap = idx + 1;
-        
-        try {
-            await supabaseClient.from('excursions').update({ sort_order: newOrderCurrent }).eq('id', current.id);
-            await supabaseClient.from('excursions').update({ sort_order: newOrderSwap }).eq('id', swap.id);
-            await loadExcursions();
-        } catch (err) {
-            console.error('Error reordering:', err);
-            alert('Erreur lors du réordonnancement. Avez-vous ajouté la colonne sort_order dans Supabase ?');
-        }
-    };
+    // Drag and drop reordering
+    function setupDragAndDrop(tbody) {
+        let dragSrc = null;
+
+        tbody.querySelectorAll('tr').forEach(row => {
+            row.addEventListener('dragstart', (e) => {
+                dragSrc = row;
+                row.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'move';
+            });
+
+            row.addEventListener('dragend', () => {
+                row.classList.remove('dragging');
+                tbody.querySelectorAll('tr').forEach(r => r.classList.remove('drag-over'));
+            });
+
+            row.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                if (row !== dragSrc) {
+                    tbody.querySelectorAll('tr').forEach(r => r.classList.remove('drag-over'));
+                    row.classList.add('drag-over');
+                }
+            });
+
+            row.addEventListener('drop', async (e) => {
+                e.preventDefault();
+                if (dragSrc === row) return;
+
+                // Reorder in DOM
+                const rows = [...tbody.querySelectorAll('tr')];
+                const srcIdx = rows.indexOf(dragSrc);
+                const dstIdx = rows.indexOf(row);
+
+                if (srcIdx < dstIdx) {
+                    row.after(dragSrc);
+                } else {
+                    row.before(dragSrc);
+                }
+
+                row.classList.remove('drag-over');
+
+                // Persist new order to Supabase
+                const newRows = [...tbody.querySelectorAll('tr')];
+                const updates = newRows.map((r, i) =>
+                    supabaseClient.from('excursions').update({ sort_order: i + 1 }).eq('id', r.dataset.id)
+                );
+                try {
+                    await Promise.all(updates);
+                    // Sync local array
+                    await loadExcursions();
+                } catch (err) {
+                    console.error('Error saving order:', err);
+                    alert('Erreur lors de la sauvegarde de l\'ordre.');
+                }
+            });
+        });
+    }
 
     // Toggle visibility
     window.toggleExcursionVisibility = async function(id, currentStatus) {

@@ -19,7 +19,7 @@
         </div>
         <div class="navbar-links">
             <a href="index.html">Accueil</a>
-            <a href="location.html">Location & Équipements</a>
+            <a href="location.html">Location &amp; Équipements</a>
             <a href="excursions.html">Nos sorties en mer</a>
             <a href="avis.html">Donnez votre avis</a>
             <a href="contact.html">Nous trouver</a>
@@ -35,64 +35,68 @@
     <!-- Bandeau dynamique géré par l'admin -->
     <div id="excursions-banner" style="display: none;"></div>
 
-    <section class="container" style="margin-top: -40px;">
+    <section class="container" style="margin-top: 40px;">
         <div id="dynamic-excursions-grid" class="excursions-grid">
             <div style="text-align: center; grid-column: 1 / -1; padding: 50px;">
                 <p>Chargement des traversées...</p>
             </div>
         </div>
+    </section>
 
-        <div style="background-color: var(--off-white); padding: 40px; border-radius: 8px; border-left: 4px solid var(--gold);">
-            <h3 style="margin-bottom: 15px; color: var(--blue-marine);"><i class="ph ph-info"></i> Informations importantes</h3>
-            <p>Les traversées et excursions peuvent être annulées ou reportées selon les conditions météorologiques afin d’assurer la sécurité de tous les passagers. En cas d’annulation liée à la météo, une indemnisation ou un report pourra être proposé par la compagnie paddle.</p>
-            <p style="margin-top: 15px;">Le port de départ ainsi que la durée des excursions peuvent également être modifiés en fonction des marées, des conditions de navigation ou de l’organisation des sorties. Toutes les informations pratiques sont communiquées aux passagers avant le départ afin de garantir une expérience agréable et sécurisée.</p>
+    <!-- Section réservation inline (remplace le modal) -->
+    <section id="inline-booking-section" style="display: none; background: linear-gradient(135deg, var(--blue-marine) 0%, #1a3a6e 100%); padding: 50px 20px; scroll-margin-top: 80px;">
+        <div class="container">
+            <h2 id="inline-booking-title" style="color: white; text-align: left; margin-bottom: 8px; font-size: 1.8rem;"></h2>
+            <p style="color: rgba(255,255,255,0.7); margin-bottom: 30px; font-family: var(--font-subtitle); font-size: 0.95rem;">
+                <i class="ph ph-calendar-blank"></i> Sélectionnez une date et un créneau disponible
+            </p>
+
+            <!-- Grille des créneaux -->
+            <div id="inline-slots" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;"></div>
+
+            <!-- Étape 2 : Formulaire -->
+            <div id="inline-step2" style="display: none; background: white; border-radius: 12px; padding: 35px; max-width: 500px; margin: 0 auto; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
+                <h3 style="color: var(--blue-marine); margin-bottom: 8px;">Vos informations</h3>
+                <p style="color: var(--gray-text); font-size: 0.9rem; margin-bottom: 20px;">
+                    Créneau sélectionné : <strong id="inline-selected-slot-text" style="color: var(--blue-ocean);"></strong>
+                </p>
+                <form id="inlineBookingForm" style="display: flex; flex-direction: column; gap: 15px;">
+                    <input type="hidden" id="inlineSlotId">
+                    <input type="hidden" id="inlineExcursionType">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label for="inlinePrenom">Prénom *</label>
+                        <input type="text" id="inlinePrenom" class="form-control" required>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label for="inlineNom">Nom *</label>
+                        <input type="text" id="inlineNom" class="form-control" required>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label for="inlineTelephone">Téléphone *</label>
+                        <input type="tel" id="inlineTelephone" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 5px;">Confirmer la réservation</button>
+                    <button type="button" id="btnInlineBack" class="btn" style="width: 100%; background: var(--blue-ciel); color: var(--blue-marine);">← Retour aux créneaux</button>
+                </form>
+            </div>
+
+            <!-- Succès -->
+            <div id="inline-success" style="display: none; text-align: center; padding: 40px 20px;">
+                <i class="ph ph-check-circle" style="font-size: 5rem; color: #2ecc71; display: block; margin-bottom: 20px;"></i>
+                <h3 style="color: white; font-size: 1.8rem; margin-bottom: 10px;">Réservation confirmée !</h3>
+                <p style="color: rgba(255,255,255,0.8); margin-bottom: 30px;">Merci pour votre réservation. Nous vous attendons avec impatience !</p>
+                <button type="button" id="btnInlineCloseSuccess" class="btn btn-primary">Retour aux excursions</button>
+            </div>
         </div>
     </section>
 
-    <!-- Modal de réservation -->
-    <div class="modal" id="bookingModal">
-        <div class="modal-content">
-            <i class="ph ph-x close-modal" id="closeBookingModal"></i>
-            <h2 id="bookingModalTitle">Réserver une excursion</h2>
-            
-            <div id="step1">
-                <p style="margin-bottom: 20px;">Sélectionnez une date et un créneau disponible.</p>
-                <div id="availableSlots" style="display: grid; gap: 10px; margin-bottom: 20px;">
-                    <!-- Les créneaux seront injectés ici par JS -->
-                    <div style="text-align: center; color: var(--gray-text);">Chargement des créneaux...</div>
-                </div>
-            </div>
-
-            <div id="step2" style="display: none;">
-                <p style="margin-bottom: 20px;">Vous avez sélectionné le créneau : <strong id="selectedSlotText"></strong>.</p>
-                <form id="bookingForm">
-                    <input type="hidden" id="slotId">
-                    <input type="hidden" id="excursionType">
-                    <div class="form-group">
-                        <label for="prenom">Prénom *</label>
-                        <input type="text" id="prenom" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="nom">Nom *</label>
-                        <input type="text" id="nom" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="telephone">Téléphone *</label>
-                        <input type="tel" id="telephone" class="form-control" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary" style="width: 100%;">Confirmer la réservation</button>
-                    <button type="button" id="btnBackToSlots" class="btn btn-secondary" style="width: 100%; margin-top: 10px; border: 1px solid #ccc; color: var(--gray-text);">Retour aux créneaux</button>
-                </form>
-            </div>
-            
-            <div id="bookingSuccess" style="display: none; text-align: center; padding: 30px 0;">
-                <i class="ph ph-check-circle" style="font-size: 4rem; color: #28a745; margin-bottom: 20px;"></i>
-                <h3>Réservation confirmée !</h3>
-                <p>Merci pour votre réservation. Nous vous attendons avec impatience !</p>
-                <button type="button" class="btn btn-primary" style="margin-top: 20px;" id="btnCloseSuccess">Fermer</button>
-            </div>
+    <section class="container" style="margin-top: 50px;">
+        <div style="background-color: var(--off-white); padding: 40px; border-radius: 8px; border-left: 4px solid var(--gold);">
+            <h3 style="margin-bottom: 15px; color: var(--blue-marine);"><i class="ph ph-info"></i> Informations importantes</h3>
+            <p>Les traversées et excursions peuvent être annulées ou reportées selon les conditions météorologiques afin d'assurer la sécurité de tous les passagers. En cas d'annulation liée à la météo, une indemnisation ou un report pourra être proposé par la compagnie paddle.</p>
+            <p style="margin-top: 15px;">Le port de départ ainsi que la durée des excursions peuvent également être modifiés en fonction des marées, des conditions de navigation ou de l'organisation des sorties. Toutes les informations pratiques sont communiquées aux passagers avant le départ afin de garantir une expérience agréable et sécurisée.</p>
         </div>
-    </div>
+    </section>
 
     <footer>
         <p>&copy; 2026 Compagnie Paddle - Thibault Bataille. Tous droits réservés.</p>
