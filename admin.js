@@ -112,11 +112,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Drag and drop reordering
+    // Drag and drop reordering (Desktop Mouse + Mobile Touch Support)
     function setupDragAndDrop(tbody) {
         let dragSrc = null;
 
         tbody.querySelectorAll('tr').forEach(row => {
+            // --- DESKTOP MOUSE EVENTS ---
             row.addEventListener('dragstart', (e) => {
                 dragSrc = row;
                 row.classList.add('dragging');
@@ -137,38 +138,74 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
 
-            row.addEventListener('drop', async (e) => {
+            row.addEventListener('drop', (e) => {
                 e.preventDefault();
                 if (dragSrc === row) return;
-
-                // Reorder in DOM
-                const rows = [...tbody.querySelectorAll('tr')];
-                const srcIdx = rows.indexOf(dragSrc);
-                const dstIdx = rows.indexOf(row);
-
-                if (srcIdx < dstIdx) {
-                    row.after(dragSrc);
-                } else {
-                    row.before(dragSrc);
-                }
-
-                row.classList.remove('drag-over');
-
-                // Persist new order to Supabase
-                const newRows = [...tbody.querySelectorAll('tr')];
-                const updates = newRows.map((r, i) =>
-                    supabaseClient.from('excursions').update({ sort_order: i + 1 }).eq('id', r.dataset.id)
-                );
-                try {
-                    await Promise.all(updates);
-                    // Sync local array
-                    await loadExcursions();
-                } catch (err) {
-                    console.error('Error saving order:', err);
-                    alert('Erreur lors de la sauvegarde de l\'ordre.');
-                }
+                applyNewOrder(row);
             });
+
+            // --- MOBILE TOUCH EVENTS (using the ☰ drag handle) ---
+            const dragHandle = row.querySelector('td:first-child');
+            if (dragHandle) {
+                dragHandle.addEventListener('touchstart', (e) => {
+                    dragSrc = row;
+                    row.classList.add('dragging');
+                    // Prevent page scroll while dragging
+                    e.preventDefault();
+                }, { passive: false });
+
+                dragHandle.addEventListener('touchmove', (e) => {
+                    e.preventDefault();
+                    const touch = e.touches[0];
+                    const target = document.elementFromPoint(touch.clientX, touch.clientY);
+                    if (!target) return;
+                    
+                    const targetRow = target.closest('tr');
+                    if (targetRow && targetRow !== dragSrc && targetRow.parentNode === tbody) {
+                        tbody.querySelectorAll('tr').forEach(r => r.classList.remove('drag-over'));
+                        targetRow.classList.add('drag-over');
+                    }
+                }, { passive: false });
+
+                dragHandle.addEventListener('touchend', (e) => {
+                    row.classList.remove('dragging');
+                    const targetRow = tbody.querySelector('tr.drag-over');
+                    if (targetRow && targetRow !== dragSrc) {
+                        targetRow.classList.remove('drag-over');
+                        applyNewOrder(targetRow);
+                    } else {
+                        tbody.querySelectorAll('tr').forEach(r => r.classList.remove('drag-over'));
+                    }
+                });
+            }
         });
+
+        async function applyNewOrder(targetRow) {
+            // Reorder in DOM
+            const rows = [...tbody.querySelectorAll('tr')];
+            const srcIdx = rows.indexOf(dragSrc);
+            const dstIdx = rows.indexOf(targetRow);
+
+            if (srcIdx < dstIdx) {
+                targetRow.after(dragSrc);
+            } else {
+                targetRow.before(dragSrc);
+            }
+
+            // Persist new order to Supabase
+            const newRows = [...tbody.querySelectorAll('tr')];
+            const updates = newRows.map((r, i) =>
+                supabaseClient.from('excursions').update({ sort_order: i + 1 }).eq('id', r.dataset.id)
+            );
+            try {
+                await Promise.all(updates);
+                // Sync local array
+                await loadExcursions();
+            } catch (err) {
+                console.error('Error saving order:', err);
+                alert('Erreur lors de la sauvegarde de l\'ordre.');
+            }
+        }
     }
 
     // Toggle visibility
